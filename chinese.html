@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+<script type="text/JavaScript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+</head>
+<body>
+	
+	<div id="presentation">Copy/paste any chinese content in the textbox below</div>
+	<textarea rows="20" cols="50" autofocus="autofocus" id="importText">&#x6B61;&#x8FCE;&#xFF0C;&#x5728;&#x9019;&#x88E1;&#x53EF;&#x4EE5;&#x653E;&#x60F3;&#x8981;&#x5206;&#x6790;&#x7684;&#x4E2D;&#x6587;&#x5B57;</textarea>
+	<input type="button" value="load!" onclick="loadText();" id="buttonImport" />
+	<div id="fullText" style="width:99%; word-wrap: break-word;">&nbsp;</div>
+	<div id="details">
+		percentage of text known:<div id="counter">0</div>
+		known:<div id="unique">0</div>
+		total unique:<div id="totalunique"></div>
+		top characters:<div id="topcharacters"></div>
+	<div>
+	<script type="text/javascript">
+		var counter = 0;
+		var unique = 0;
+		var total = 0;
+		var className = '';
+		var specialChars = ["，","。","：","「","！","」","？", "．", "　"," ", "、","!","～","~"];
+		
+		$("#details").hide();
+		function loadText() {
+			$("#details").show();
+			$("#presentation").hide();
+			$("#importText").hide();
+			$("#buttonImport").hide();
+			for(var i=0;i<$("#importText").val().length;i++) {
+				className = $("#importText").val()[i];
+				if(isSpecialChar(className)) {
+					className = '';
+				}
+				$("#fullText").append("<char class='"+className+"' onclick='iknow(this)'>"+$("#importText").val()[i]+"</char>");
+			}
+			total = $("#fullText char[class!='']").length;
+			loadDetails();
+		}
+		
+		function isSpecialChar(className) {
+			if(className === "\n") return true;
+			for(var cur=0;cur<specialChars.length;cur++) {
+				if(className === specialChars[cur]) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		var map = {}; // or var map = {};
+		
+		function loadDetails() {
+			var list = $("#fullText char[class!='']");
+			for(var i=0;i<list.size();i++) {
+				if(map[list.get(i).innerHTML] != undefined) {
+					map[list.get(i).innerHTML] = map[list.get(i).innerHTML]+1;
+				}
+				else {
+					map[list.get(i).innerHTML] = 1;
+				}
+			}
+
+			for(var top = 0; top<Object.keys(map).length; top++) {
+				var max=0;
+				var maxKey='';
+				for(var key in map) {
+					if(map[key] > max) {
+						max = map[key];
+						maxKey=key;
+					}
+				}
+				$("#topcharacters").append("<char class='"+maxKey+"'>"+maxKey+":"+map[maxKey]+"</char> - ");
+				map[maxKey] = -1;
+			}
+			$("#totalunique").append(Object.keys(map).length);
+		}
+		
+		function getValue(k) {
+    		return map[k];
+		}
+		
+		function iknow(object) {
+			if($(object).attr("class") != " " && $("."+$(object).attr("class")).css('background-color')!= 'yellow') {
+				counter += $("#fullText ."+$(object).attr("class")).length;
+				unique ++;
+				$("#fullText ."+$(object).attr("class")).css('background-color','yellow');
+				$("#counter").text(Math.floor(counter*100/total));
+				$("#unique").text(unique);
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<html>
+	<head>
+		<title>Run-up!</title>
+		<style type="text/css">
+body {
+	background-color:#CCCCFF;
+	font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	text-align:center;
+}
+.mainInfo {
+	font-size:250%;
+}
+a {
+	text-decoration:none;
+	background-color:#E0E0E0;
+	border: 1px solid;
+	display:inline-block;
+}
+.changeTime {
+	width: 20px;
+}
+#startLink {
+	width:60px;
+}
+</style>
+	</head>
+	<script type="text/javascript">
+		var started=0;
+		var startTime=0;
+		var diffTime = 0;
+		var nowTime = 0;
+		var interval = 0;
+		var minutes=0;
+		var seconds=0;
+		var objective = 20;
+		var floor = 1;
+		function showFloor() {
+			objectif = document.getElementById("objectifField").value;
+			floor = Math.floor((diffTime/(objectif*60))*90)+1;
+			document.getElementById("floor").innerHTML=floor;
+		}
+		function showTime() {
+			nowTime = new Date();
+			diffTime = Math.round((nowTime - startTime)/1000);
+			minutes=Math.floor(diffTime/60);
+			seconds=diffTime%60;
+			if (seconds < 10) { seconds="0"+seconds; }
+			if (minutes < 10) { minutes="0"+minutes; }
+			document.getElementById("time").innerHTML = minutes+":"+seconds;
+		}
+		function showStatus() {
+			showTime();
+			showFloor();
+		}
+		function startStop() {
+			if(started==0) {
+				startTime = new Date();
+				interval = setInterval(function(){showStatus()},1000);
+				document.getElementById("startLink").innerHTML="Stop!";
+			}
+			if(started==1) {
+				window.clearInterval(interval);
+				document.getElementById("startLink").innerHTML="Start!";
+				document.getElementById("time").innerHTML="00:00";
+			}
+			started==0?started=1:started=0;
+		}
+		function faster() {
+			if(document.getElementById("objectifField").value > 1) {
+				document.getElementById("objectifField").value = parseInt(document.getElementById("objectifField").value, 10)-1;
+			}
+		}
+		function slower() {
+			document.getElementById("objectifField").value = parseInt(document.getElementById("objectifField").value, 10)+1;
+		}
+	</script>
+	<body>
+		<div id="timeText" class="textInfo">Time:</div>
+		<div id="time" class="mainInfo">00:00</div><br/>
+		<div id="floorText" class="textInfo">Target floor: </div><div id="floor" class="mainInfo">1</div><br/>
+		<div id="objective">Objective: <input type="text" id="objectifField" size="2" value="20" /> minutes <a href="#" id="more" class="changeTime" onclick="slower()">+</a>&nbsp;&nbsp;<a href="#" id="less" class="changeTime" onclick="faster()">-</a></div><br/>
+		<div id="start"><a href="#" id="startLink" onclick="startStop()">Start!</a></div>
+	</body>
+</html>

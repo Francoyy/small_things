@@ -1,0 +1,297 @@
+<div id="main" style="border-style:solid;border-color:#000000;width:500px;height:500px;">
+<div id="infobulle" style="z-index:5;background-color:yellow;width:20px;height:20px;position:relative;top:0px;left:0px;"></div>
+<div id="lost" style="z-index:10;display:none;width:500px;height:500px;top:50px;left:50px;text-align:center;font-size:400%;color:#AAAAAA;">You lost!<br/><br/><input type=button value="restart" onclick="restart();"/></div>
+</div>
+<div id="debug" style="width:500px;font-family:'Verdana', sans-serif;">
+	<div id="level" style="width:80px;height:30px;position:relative;top:0px;left:20px;font-family:'Verdana', sans-serif;">Level 1</div>
+	<div id="top" style="width:60px;height:60px;background-color:red;position:relative;top:0px;left:200px" onmousedown="changeDirection('up')"></div>
+	<div id="score" style="width:100px;height:30px;position:relative;top:-90px;left:395px;font-family:'Verdana', sans-serif;">Score : 0</div>
+	<div id="left" style="width:60px;height:60px;background-color:blue;position:relative;top:-20px;left:110px" onmousedown="changeDirection('left')"></div>
+	<div id="right" style="width:60px;height:60px;background-color:yellow;position:relative;top:-80px;left:290px" onmousedown="changeDirection('right')"></div>
+	<div id="down" style="width:60px;height:60px;background-color:green;position:relative;top:-70px;left:200px" onmousedown="changeDirection('down')"></div>
+	<center>Keys : i j k l or numpad 1 2 3 5. Pause : space</center>
+</div>
+<div id="fakecode" style="display:none">
+	<br/>
+	function checkApple() { //check if apple is reached, if so, generates another one<br/>
+	&nbsp;&nbsp;if(isAppleCollision()) {<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;document.body.removeChild(document.getElementById("apple"));<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;generateApple();<br/> 
+	&nbsp;&nbsp;&nbsp;&nbsp;updateScoreAndLevel();<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;numberBlock++;<br/>
+	&nbsp;&nbsp;}<br/>
+	}<br/>
+	<br/>
+	function updateScoreAndLevel() {<br/>
+	&nbsp;&nbsp;score+=10;<br/>
+	&nbsp;&nbsp;document.getElementById("score").innerHTML="Score : "+score;<br/>
+	&nbsp;&nbsp;if(Math.floor(score / 100) == level) { //level sup<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;level++;<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("level").innerHTML="Level "+level;<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;speed=speed-15;<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;window.clearInterval(interval);<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;interval = setInterval ( "move()", speed );<br/>
+	&nbsp;&nbsp;}<br/>
+	}<br/>
+	<br/>
+	function refreshNoTouch() { //refresh the array of elements not to be touched<br/>
+	&nbsp;&nbsp;var divtemp;<br/>
+	&nbsp;&nbsp;var index=0;<br/>
+	&nbsp;&nbsp;for(var i=id-1;i>id-1-numberBlock&&i>0;i--) {<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;divtemp = document.getElementById(i);<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;if(divtemp != null) {<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;noTouch[index]=divtemp.style.left.substring(0,divtemp.style.left.indexOf("px"))+":"+divtemp.style.top.substring(0,divtemp.style.top.indexOf("px"));<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;index++;<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+	&nbsp;&nbsp;}<br/>
+	}<br/>
+	<br/>
+</div>
+
+<script type="text/javascript">
+var currentTop = 0;
+var currentLeft = 0;
+var square=20;
+var divSize=500;
+var vertical = 0;
+var horizontal = square;
+var id = 1;
+var numberBlock = 10;
+var appleH;
+var appleV;
+var noTouch = new Array();
+var speed = 150;
+var interval = setInterval ( "move()", speed );
+var direction = "right";
+var wanted = "right";
+var level = 1;
+var score = 0;
+var isPaused = false;
+
+document.onkeypress=function(e){
+var e=window.event || e
+ if(e.charCode == 49 || e.charCode == 106)
+	changeDirection("left");
+ if(e.charCode == 50 || e.charCode == 107)
+	changeDirection("down");
+ if(e.charCode == 51 || e.charCode == 108)
+	changeDirection("right");
+ if(e.charCode == 53 || e.charCode == 105)
+	changeDirection("up");
+ if(e.charCode == 32)
+	pause();
+}
+
+generateApple();
+
+
+function restart() {
+	document.getElementById("lost").style.display="none";
+	document.getElementById("main").removeChild(document.getElementById("apple"));
+	for(var i=id-1;i>id-1-numberBlock&&i>0;i--) {
+		document.getElementById("main").removeChild(document.getElementById(i));
+	}
+	
+	currentTop = 0;
+	currentLeft = 0;
+	square=20;
+	divSize=500;
+	vertical = 0;
+	horizontal = square;
+	id = 1;
+	numberBlock = 10;
+	appleH;
+	appleV;
+	noTouch = new Array();
+	speed = 150;
+	interval = setInterval ( "move()", speed );
+	direction = "right";
+	wanted = "right";
+	//reset score
+	resetScore();
+	//generate apple
+	generateApple();
+}
+
+function resetScore() {
+	level = 1;
+	score = 0;
+	document.getElementById("score").innerHTML="Score : "+score;
+	document.getElementById("level").innerHTML="Level "+level;
+}
+
+function pause() {
+	if(isPaused) {	//continue game
+		isPaused=false;
+		interval = setInterval ( "move()", speed );
+		document.getElementById("main").style.display="";
+		document.getElementById("debug").style.display="";
+		document.getElementById("fakecode").style.display="none";
+	}
+	else {	//pause game
+		isPaused=true;
+		window.clearInterval(interval);
+		document.getElementById("main").style.display="none";
+		document.getElementById("debug").style.display="none";
+		document.getElementById("fakecode").style.display="";
+	}
+}
+
+
+
+function move() {
+	var newLeft = ((divSize+currentLeft+horizontal) % divSize);
+	var newTop = ((divSize+currentTop+vertical) % divSize);
+
+	createWormBody();
+	
+	document.getElementById("infobulle").style.left=newLeft;
+	document.getElementById("infobulle").style.top=newTop;
+	
+	currentLeft = newLeft;
+	currentTop = newTop;
+	
+	refreshNoTouch();
+	checkNoTouch();
+	checkApple();
+	
+	direction = wanted;
+	
+}
+
+function checkNoTouch() {
+	var blockLeft;
+	var blockTop;
+	var touch = 0;
+	for(var i=0;i<noTouch.length;i++) {
+		blockLeft = noTouch[i].substring(0,noTouch[i].indexOf(":"))-11;
+		blockTop = noTouch[i].substring(noTouch[i].indexOf(":")+1,noTouch[i].length)-11; //because of the adjusted offsets for the body we remove 11
+
+		if(noTouch[i]!=null && currentLeft==blockLeft && currentTop==blockTop) {
+			touch=1;
+		}
+	}
+	if(touch==1) {
+		endGame();
+	}
+}
+
+function endGame() {
+	document.getElementById("lost").style.display="";
+	window.clearInterval(interval);
+}
+
+function checkApple() { //check if apple is reached, if so, generates another one
+	if(isAppleCollision()) {
+		document.getElementById("main").removeChild(document.getElementById("apple"));
+		generateApple();
+		updateScoreAndLevel();
+		numberBlock++;
+	}
+}
+
+function updateScoreAndLevel() {
+	score+=10;
+	document.getElementById("score").innerHTML="Score : "+score;
+	if(Math.floor(score / 100) == level) { //level sup
+		level++;
+		document.getElementById("level").innerHTML="Level "+level;
+		speed=speed-15;
+		window.clearInterval(interval);
+		interval = setInterval ( "move()", speed );
+	}
+}
+
+function refreshNoTouch() { //refresh the array of elements not to be touched
+	var divtemp;
+	var index=0;
+	for(var i=id-1;i>id-1-numberBlock&&i>0;i--) {
+		divtemp = document.getElementById(i);
+		if(divtemp != null) {
+			noTouch[index]=divtemp.style.left.substring(0,divtemp.style.left.indexOf("px"))+":"+divtemp.style.top.substring(0,divtemp.style.top.indexOf("px"));
+			index++;
+		}
+	}
+}
+
+function changeDirection(newDirection) {
+	if(newDirection == "left" && direction != "right") {
+		vertical = 0;
+		horizontal = -1*square;
+		wanted = "left";
+	}
+	if(newDirection == "down" && direction != "up") {
+		vertical = square;
+		horizontal = 0;
+		wanted = "down";
+	}
+	if(newDirection == "right" && direction != "left") {
+		vertical = 0;
+		horizontal = square;
+		wanted = "right";
+	}
+	if(newDirection == "up" && direction != "down") {
+		vertical = -1*square;
+		horizontal = 0;
+		wanted = "up";
+	}
+}
+
+
+function createWormBody() {
+	var newdiv = document.createElement('div');
+	newdiv.style.width = square;
+	newdiv.style.height = square;
+	newdiv.style.left=currentLeft+11;
+	newdiv.style.top=currentTop+11;
+	newdiv.style.position = "absolute";
+	newdiv.style.backgroundColor="#000000";
+	newdiv.id = ""+id;
+	document.getElementById("main").appendChild(newdiv);
+	if(id > numberBlock) {
+		var toRemove = id - numberBlock;
+		if(document.getElementById(toRemove) != null)
+			document.getElementById("main").removeChild(document.getElementById(toRemove));
+	}
+	id++;
+}
+
+function generateApple() {
+	newApple();
+	var newdiv = document.createElement('div');
+	newdiv.style.width = square;
+	newdiv.style.height = square;
+	newdiv.style.left=appleH+11;
+	newdiv.style.top=appleV+11;
+	newdiv.style.position = "absolute";
+	newdiv.style.backgroundColor="#FF0000";
+	newdiv.id = "apple";
+	document.getElementById("main").appendChild(newdiv);
+}
+
+function newApple() {
+	appleH = Math.floor(Math.random()*divSize);
+	appleH = appleH - (appleH % square);
+	appleV = Math.floor(Math.random()*divSize);
+	appleV = appleV - (appleV % square);
+	if(isAppleCollision()) {
+		newApple();
+	}
+}
+
+function isAppleCollision() {
+	var blockLeft;
+	var blockTop;
+	for(var i=0;i<noTouch.length;i++) {
+		blockLeft = noTouch[i].substring(0,noTouch[i].indexOf(":"))-11;
+		blockTop = noTouch[i].substring(noTouch[i].indexOf(":")+1,noTouch[i].length)-11;
+		if(noTouch[i]!=null && appleH==blockLeft && appleV==blockTop) {
+			return true;
+		}
+	}
+	if(appleH == currentLeft && appleV == currentTop) {
+		return true;
+	}
+	return false;
+}
+</script>
